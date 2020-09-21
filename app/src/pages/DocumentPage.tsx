@@ -11,7 +11,10 @@ import {
   IonIcon,
   IonModal,
   IonTextarea,
-  IonInput
+  IonInput,
+  IonCard,
+    IonCardContent,
+    IonCardTitle,
 } from '@ionic/react';
 import { add, arrowBack, arrowUpOutline } from 'ionicons/icons';
 import React, { useState } from 'react';
@@ -52,7 +55,7 @@ const DocumentPage: React.FC = () => {
   const { document_id } = useParams<{ document_id: string }>();
   const [showModal, setShowModal] = useState(false);
   const [labelIndex, setLabelIndex] = useState(-1);
-  const [documents] = useState(sampleDoc); //TODO: get documents via project id
+  const [documents] = useState(sampleDoc); //TODO: get documents via document id
   const [users_and_labels] = useState(labels);
 
   const renderLabelModal = (i:number) => {
@@ -72,17 +75,22 @@ const DocumentPage: React.FC = () => {
       </IonHeader>
 
       <IonContent>
+      <IonHeader className="pageTitle">Document</IonHeader>
         <div className="container">
-          <strong>{document_id}</strong>
+            <strong>{document_id}</strong>
+            {documents.map((doc, index) => (
+                <IonCard key={index}>
+                    <IonCardTitle>
+                            {doc.title}
+                    </IonCardTitle>
+                </IonCard>
+            ))}
+        </div>
+        <div className="container">
 
 
-          <IonList>
-            {documents.map((doc, i) =>
-              <IonItem key={i}>
-                <IonLabel>{doc.title}</IonLabel>
-              </IonItem>
-            )}
-          </IonList>
+
+
           <IonList>
             {labels.map((label, i) =>
               <IonItem key={i}>
@@ -92,6 +100,12 @@ const DocumentPage: React.FC = () => {
               </IonItem>
             )}
           </IonList>
+        </div>
+        <div className="container">
+            <IonButton className="ion-margin-top" type="submit" expand="block">
+                xxx
+            </IonButton>
+
         </div>
 
 
