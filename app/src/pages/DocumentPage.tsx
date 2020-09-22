@@ -51,17 +51,25 @@ const labels: Users_and_Labels[] = [
     }
 ]
 
-const DocumentPage: React.FC = () => {
+var DocumentPage: React.FC = () => {
   const { document_id } = useParams<{ document_id: string }>();
   const [showModal, setShowModal] = useState(false);
   const [labelIndex, setLabelIndex] = useState(-1);
   const [documents] = useState(sampleDoc); //TODO: get documents via document id
   const [users_and_labels] = useState(labels);
 
+  const firebaseToken = localStorage.getItem("user-token")
+  function x(){
+    console.log("test");
+  }
+  fetch("http://127.0.0.1:5000/document/get").then(response => response.json()).then(data => console.log(data));
+
   const renderLabelModal = (i:number) => {
     setShowModal(true)
     setLabelIndex(i)
   }
+
+
 
 
   return (
