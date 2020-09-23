@@ -17,60 +17,74 @@ import {
     IonCardTitle,
 } from '@ionic/react';
 import { add, arrowBack, arrowUpOutline } from 'ionicons/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import './DocumentPage.css';
 import { isNullOrUndefined } from 'util';
+import { projectServices } from '../services/ProjectServices'
 
 interface Document {
   title: string;
+  comments: string[];
+  user_and_labels: string[][];
 }
 
 interface Users_and_Labels {
-    user: string;
+    email: string;
     label: string;
 }
-
-const sampleDoc: Document[] = [
-  {
-    title: "first doc",
-
-  }
-]
-
 
 
 const labels: Users_and_Labels[] = [
     {
-        user: "aaaa@aucklanduni.ac.nz",
+        email: "aaaa@aucklanduni.ac.nz",
         label: "tag1",
     },
     {
-        user: "bbbb@aucklanduni.ac.nz",
+        email: "bbbb@aucklanduni.ac.nz",
         label: "tag1",
     }
 ]
 
 var DocumentPage: React.FC = () => {
-  const { document_id } = useParams<{ document_id: string }>();
+  const {document_id } = useParams<{document_id: string }>();
+  const {project } = useParams<{project: string }>();
   const [showModal, setShowModal] = useState(false);
   const [labelIndex, setLabelIndex] = useState(-1);
-  const [documents] = useState(sampleDoc); //TODO: get documents via document id
-  const [users_and_labels] = useState(labels);
+//TODO: get documents via document id
+  //const [users_and_labels] = useState(labels);
 
-  const firebaseToken = localStorage.getItem("user-token")
-  function x(){
-    console.log("test");
-  }
-  fetch("http://127.0.0.1:5000/document/get").then(response => response.json()).then(data => console.log(data));
+    const id_Token = localStorage.getItem("user-token")
+    const [documentData, setDocumentData] = useState([[""]]);
+    const [labelData, setLabelData] = useState([[""]]) //I dont think this is right
+
+    useEffect(() => {
+      try {
+      console.log(project)
+        projectServices.getDocument(project, document_id)
+        .then(data => {
+
+            data = JSON.parse(data)
+            console.log(data)
+
+            setDocumentData(data.data)
+            console.log(data.user_and_labels)
+            setLabelData(data.user_and_labels)
+
+        })
+      } catch (e) {
+
+      }
+    }, []);
+
+
+console.log(labelData)
+console.log(documentData)
 
   const renderLabelModal = (i:number) => {
     setShowModal(true)
     setLabelIndex(i)
   }
-
-
-
 
   return (
     <IonPage>
@@ -86,29 +100,23 @@ var DocumentPage: React.FC = () => {
       <IonHeader className="pageTitle">Document</IonHeader>
         <div className="container">
             <strong>{document_id}</strong>
-            {documents.map((doc, index) => (
-                <IonCard key={index}>
-                    <IonCardTitle>
-                            {doc.title}
-                    </IonCardTitle>
-                </IonCard>
-            ))}
+            <IonCardTitle>
+                {documentData}
+            </IonCardTitle>
         </div>
+
+        {/** I cant get this to work **/}
+        {/**
         <div className="container">
-
-
-
-
           <IonList>
-            {labels.map((label, i) =>
-              <IonItem key={i}>
-                <IonLabel>{label.user}</IonLabel>
-                <IonLabel>{label.label}</IonLabel>
-
+            {labelData.map((data, i) => (
+                <IonItem key={i}>
+                <IonLabel>{data.email}</IonLabel>
               </IonItem>
-            )}
+            ))}
           </IonList>
-        </div>
+        </div>**/}
+
         <div className="container">
             <IonButton className="ion-margin-top" type="submit" expand="block">
                 xxx

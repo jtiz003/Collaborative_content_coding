@@ -50,7 +50,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
              * <Redirect from="/" to="/page/Inbox" exact />**/}
             <Route path="/project/:project/settings" component={SettingsPage} exact />
 
-            <Route path="/document/:document_id" component={DocumentPage} exact />
+            <Route path="/project/:project/document/:document_id" component={DocumentPage} exact />
           </IonRouterOutlet>
       </IonReactRouter>
     </IonApp>
