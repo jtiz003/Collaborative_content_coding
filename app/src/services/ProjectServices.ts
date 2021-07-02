@@ -1,4 +1,3 @@
-
 import {downloadHelpers} from '../helpers/download'
 /**
  * The project service encapsulates all backend api calls for performing CRUD operations on project data

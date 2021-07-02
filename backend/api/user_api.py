@@ -3,7 +3,7 @@ from middleware.auth import check_token
 # from api.methods import JSONEncoder, add_project_to_user, remove_project_from_user, remove_all_labels_of_user
 from flask import Blueprint, request, make_response, jsonify, g
 # from mongoDBInterface import get_col
-from database.user_dao import get_user_from_database_by_email, get_user_from_database_by_username, save_user, \
+from database.user_dao import get_user_from_database_by_email, get_user_from_database_by_username, save_user_and_keys, \
     get_all_user_email_from_database, does_user_belong_to_a_project
 
 user_api = Blueprint('user_api', __name__)
@@ -129,16 +129,18 @@ def create_user():
 
     if 'username' in request.json:
         username = request.json['username']
+
         db_user = get_user_from_database_by_username(username)
         if db_user is not None:
             response = {'message': "Username is already taken"}
             return make_response(response), 400
         else:
+            user_keys = request.json['keys']
             user = {
                 "username": username,
                 "email": requestor_email
             }
-            save_user(user)
+            save_user_and_keys(user, user_keys)
     else:
         response = {'message': "Missing username"}
         return make_response(response), 400
@@ -146,6 +148,7 @@ def create_user():
     # is part of! When a new user is created it should be empty
 
     return "", 204
+
 
 # @user_api.route("/projects/<project_name>/users/add", methods=["Post"])
 # # Adding a new user to a project

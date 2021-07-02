@@ -7,6 +7,8 @@ import { Button, Card, CardActions, CardContent, CardHeader, TextField } from '@
 import Typography from '@material-ui/core/Typography';
 import { IonSpinner } from '@ionic/react';
 import { userService } from '../../services/UserServices'
+import { encryptedHelpers } from '../../helpers/encryption'
+
 //import * as ROUTES from '../../constants/routes';
 
 const SignUpPage = () => (
@@ -50,7 +52,7 @@ class SignUpFormBase extends Component {
     onSubmit = event => {
         this.setState({ loading: true });
         const { username, email, passwordOne, loading , encryptionKey} = this.state;
-
+        const keys = encryptedHelpers.generateEncryptedKeys(encryptionKey)
         this.props.firebase
             .doCreateUserWithEmailAndPassword(email, passwordOne)
             .then(authUser => {
@@ -61,7 +63,7 @@ class SignUpFormBase extends Component {
             }).then(() => {
                 this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
                     localStorage.setItem("user-token", idToken);
-                    userService.signup(username, email, idToken);
+                    userService.signup(username, email, idToken, keys);
                 })
                 this.setState({ loading: false });
             })

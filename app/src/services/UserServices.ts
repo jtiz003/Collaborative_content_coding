@@ -29,13 +29,15 @@
         });
 }
 
-function signup(username: string, email: string , token: string){
-    const requestOptions = {
+function signup(username: string, email: string , token: string, keys:object){
+   console.log(JSON.stringify({username, email, keys}))
+  console.log( localStorage.getItem('user-token'))
+   const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
           "Authorization":"Bearer " + localStorage.getItem('user-token')
         },
-        body: JSON.stringify({username, email})
+        body: JSON.stringify({username, email, keys})
     };
 
     return fetch(process.env.REACT_APP_API_URL + `/users/create`, requestOptions)
