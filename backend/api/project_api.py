@@ -26,6 +26,9 @@ def get_projects():
             'name': p.project_name,
             'owner': get_owner_of_the_project(p).username
         })
+
+    # sort projects by owner
+    projects = sorted(projects, key=lambda k: k['owner']) 
     response = {'projects': projects}
     return make_response(response), 200
 
