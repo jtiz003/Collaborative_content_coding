@@ -40,9 +40,9 @@ def get_users_associated_with_a_project(project_id, page, page_limite):
     return collaborators
 
 
-def get_projects_names_of_the_user(requestor_email):
-    db_ser = get_user_from_database_by_email(requestor_email)
-    return db_ser.projects
+def get_all_projects_of_a_user(requestor_email):
+    db_user = get_user_from_database_by_email(requestor_email)
+    return db_user.projects
 
 
 def get_owner_of_the_project(project):

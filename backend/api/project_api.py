@@ -1,4 +1,4 @@
-from database.project_dao import create_new_project, get_project_by_name, get_projects_names_of_the_user, \
+from database.project_dao import create_new_project, get_project_by_name, get_all_projects_of_a_user, \
     get_owner_of_the_project
 from database.user_dao import get_user_public_key
 from middleware.auth import check_token
@@ -17,7 +17,7 @@ project_api = Blueprint('project_api', __name__)
 @check_token
 def get_projects():
     requestor_email = g.requestor_email
-    projects_of_the_user = get_projects_names_of_the_user(requestor_email)
+    projects_of_the_user = get_all_projects_of_a_user(requestor_email)
     projects = []
 
     for p in projects_of_the_user:
