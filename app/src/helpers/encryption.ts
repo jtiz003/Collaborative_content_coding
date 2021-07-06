@@ -1,54 +1,64 @@
 export const encryptedHelpers = {
   generateEncryptedKeys,
   saveKeys,
-  generateEncryptedEntryKey
+  generateEntryKey
 }
 
-const CryptoJS = require('crypto-js') , crypto = require('crypto')
+const crypto = require('crypto')
 
 function generateEncryptedKeys(phrase:string) {
   // randomly generate a salt and hash the phrase
-  const salt = CryptoJS.lib.WordArray.random(128/8).toString()
-    , hash = CryptoJS.SHA256(phrase, salt)
-    , hashStr = hash.toString(CryptoJS.enc.Base64) // stringify the hash
-    , keys = {salt: salt, public_key:'', en_private_key:''}
-    , prime_length = 60
-    , diffHell = crypto.createDiffieHellman(prime_length);
+  const salt = crypto.randomBytes(16).toString('base64')
+    , hash = crypto.createHmac("sha256",salt).update(phrase).digest("base64").toString()
+    , keys = {salt: salt, public_key:'', en_private_key:''};
 
-  diffHell.generateKeys('base64');
-  keys.public_key = diffHell.getPublicKey('base64');
-  keys.en_private_key = CryptoJS.AES.encrypt(diffHell.getPrivateKey('base64'), hashStr).ciphertext.toString()
+  console.log(hash)
+  console.log(keys)
+
+  const { publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: 'spki',
+      format: 'pem'
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem',
+      cipher: 'aes-256-cbc',
+      passphrase: hash
+    }
+  });
+
+  console.log(publicKey)
+  console.log(privateKey)
+
+  const publicKeyLines = publicKey.split('\n')
+  publicKeyLines.splice(0,2)
+  publicKeyLines.splice(-2)
+
+  const privateKeyLines= privateKey.split('\n')
+  privateKeyLines.splice(0,2)
+  privateKeyLines.splice(-2)
+
+  keys.public_key = publicKeyLines.join('')
+  keys.en_private_key = privateKeyLines.join('')
+
+  console.log( keys)
+
   return keys
-  // generate a public private key pair
-  // const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-  //   modulusLength: 1024,
-  //   publicKeyEncoding: {
-  //     type: 'spki',
-  //     format: 'pem'
-  //   },
-  //   privateKeyEncoding: {
-  //     type: 'pkcs8',
-  //     format: 'pem'
-  //   }
-  // });
 }
+//
+// generateEncryptedKeys('ywu660')
 
-function saveKeys(publicKey:string, EN_privateKey:string, salt:string, EN_entryKey:string) {
-  localStorage.setItem('public_key',publicKey)
+
+function saveKeys(EN_privateKey:string, salt:string) {
   localStorage.setItem('en_private_key',EN_privateKey)
   localStorage.setItem('salt',salt)
 }
 
-function generateEncryptedEntryKey(publicKey:string) {
-  //generate ENTRY KEY
-  const entryKey = CryptoJS.lib.WordArray.random(128/8)
-    , en_entry_key = CryptoJS.AES.encrypt(entryKey, publicKey).ciphertext.toString()
-
-  localStorage.setItem('en_entry_key',en_entry_key)
-  console.log('entry key: ' + entryKey)
-  return en_entry_key
+function generateEntryKey() {
+ return crypto.generateKeySync('hmac', 64).export.toString('base64');
 }
-
 // function encryptData(phrase,publicKey) {
 //   var data = ''
 //     , encryptedData= CryptoJS.AES.encrypt(data, phrase)

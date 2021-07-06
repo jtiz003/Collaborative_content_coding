@@ -17,6 +17,7 @@ import onLogout from '../helpers/logout'
 import './Header.css';
 import { notificationsOutline } from 'ionicons/icons';
 import { projectServices } from '../services/ProjectServices';
+// import {encryptedHelpers} from '../helpers/encryption';
 
 interface HeaderProps {
   firebase?: any,
@@ -48,9 +49,11 @@ const Header: React.FC<HeaderProps> = (props:HeaderProps) => {
 
   useEffect(() => {
     if (newProject !== "") {
+      let entry_key = ''
+      //if(encryptionStatus) entry_key = encryptedHelpers.generateEntryKey()
       try {
         projectServices
-          .createProject(newProject, firebase)
+          .createProject(newProject, firebase, entry_key)
           .then((data) => {
             if(props.handleCreateProject) props.handleCreateProject(newProject)
             setShowCreateProject(false)

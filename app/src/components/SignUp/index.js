@@ -3,7 +3,7 @@ import { withFirebase } from '../Firebase';
 import { compose } from 'recompose';
 import { css } from 'glamor';
 import { Redirect } from "react-router-dom";
-import { Button, Card, CardActions, CardContent, CardHeader, TextField } from '@material-ui/core';
+import { Button, Card, CardActions, CardContent, TextField } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import { IonSpinner } from '@ionic/react';
 import { userService } from '../../services/UserServices'
@@ -52,7 +52,7 @@ class SignUpFormBase extends Component {
     onSubmit = event => {
         this.setState({ loading: true });
         const { username, email, passwordOne, loading , encryptionKey} = this.state;
-        const keys = encryptedHelpers.generateEncryptedKeys(encryptionKey)
+
         this.props.firebase
             .doCreateUserWithEmailAndPassword(email, passwordOne)
             .then(authUser => {
@@ -61,9 +61,14 @@ class SignUpFormBase extends Component {
                 this.setState({ loading: false });
 
             }).then(() => {
+                const keys = encryptedHelpers.generateEncryptedKeys(encryptionKey);
+                console.log(keys);
+
                 this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
                     localStorage.setItem("user-token", idToken);
                     userService.signup(username, email, idToken, keys);
+
+                    // encryptedHelpers.saveKeys(keys.en_private_key, keys.salt)
                 })
                 this.setState({ loading: false });
             })

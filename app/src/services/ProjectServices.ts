@@ -14,7 +14,7 @@ export const projectServices = {
     getProjectAgreementScore,
 }
 
-async function createProject(project_name: any, firebase: any){
+async function createProject(project_name: any, firebase: any, entry_key:string){
   const token = localStorage.getItem('user-token');
   const requestOptions = {
         method: 'POST',
@@ -22,7 +22,7 @@ async function createProject(project_name: any, firebase: any){
           'Content-Type' : 'application/json',
           "Authorization":"Bearer " + token
         },
-        body: JSON.stringify( {project_name} )
+        body: JSON.stringify( {project_name, entry_key} )
     }
        //await handleAuthorization(firebase);
    if(firebase.auth.currentUser != null){
