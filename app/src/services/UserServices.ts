@@ -30,8 +30,6 @@
 }
 
 function signup(username: string, email: string , token: string, keys:object){
-   console.log(JSON.stringify({username, email, keys}))
-  console.log( localStorage.getItem('user-token'))
    const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
@@ -43,7 +41,7 @@ function signup(username: string, email: string , token: string, keys:object){
     return fetch(process.env.REACT_APP_API_URL + `/users/create`, requestOptions)
         .then(handleResponse)
         .then(data => {
-            return data.users
+            return data.en_private_key
         })
 }
 

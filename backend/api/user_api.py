@@ -5,6 +5,8 @@ from flask import Blueprint, request, make_response, jsonify, g
 # from mongoDBInterface import get_col
 from database.user_dao import get_user_from_database_by_email, get_user_from_database_by_username, save_user_and_keys, \
     get_all_user_email_from_database, does_user_belong_to_a_project
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 user_api = Blueprint('user_api', __name__)
 
@@ -135,7 +137,35 @@ def create_user():
             response = {'message': "Username is already taken"}
             return make_response(response), 400
         else:
-            user_keys = request.json['keys']
+            user_hash = request.json['keys']
+            salt = user_hash['salt']
+            hash_phrase = user_hash['hash']
+            # generate encrypted private key and public key
+            private_key = rsa.generate_private_key(
+                public_exponent=65537, key_size=2048, )
+            pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.BestAvailableEncryption(bytes(hash_phrase, 'utf-8'))
+            )
+            private_key_lines = pem.decode('utf-8').splitlines()
+            private_key_lines.pop()
+            private_key_lines.pop(0)
+
+            public_key = private_key.public_key().public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo).decode('utf-8')
+
+            public_key_lines = public_key.splitlines()
+            public_key_lines.pop()
+            public_key_lines.pop(0)
+
+            user_keys = {
+                "salt": salt,
+                "public_key": ''.join(public_key_lines),
+                "en_private_key": ''.join(private_key_lines)
+            }
+
             user = {
                 "username": username,
                 "email": requestor_email
@@ -145,10 +175,11 @@ def create_user():
         response = {'message': "Missing username"}
         return make_response(response), 400
 
-    # is part of! When a new user is created it should be empty
-
-    return "", 204
-
+    # a new user created, the en_private_key is returned to the frontend
+    res = {
+        'en_private_key': ''.join(private_key_lines)
+    }
+    return jsonify(res), 200
 
 # @user_api.route("/projects/<project_name>/users/add", methods=["Post"])
 # # Adding a new user to a project

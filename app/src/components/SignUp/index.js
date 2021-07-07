@@ -7,7 +7,7 @@ import { Button, Card, CardActions, CardContent, TextField } from '@material-ui/
 import Typography from '@material-ui/core/Typography';
 import { IonSpinner } from '@ionic/react';
 import { userService } from '../../services/UserServices'
-import { encryptedHelpers } from '../../helpers/encryption'
+import { EncryptedHelpers } from '../../helpers/encryption';
 
 //import * as ROUTES from '../../constants/routes';
 
@@ -61,15 +61,19 @@ class SignUpFormBase extends Component {
                 this.setState({ loading: false });
 
             }).then(() => {
-                const keys = encryptedHelpers.generateEncryptedKeys(encryptionKey);
-                console.log(keys);
+                const keys = EncryptedHelpers.generateHash(encryptionKey);
 
                 this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
                     localStorage.setItem("user-token", idToken);
-                    userService.signup(username, email, idToken, keys);
-
-                    // encryptedHelpers.saveKeys(keys.en_private_key, keys.salt)
+                    userService.signup(username, email, idToken, keys).then(
+                      data => {
+                          // save the salt and en_private_key into the local storage
+                          localStorage.setItem('en_private_key', data)
+                          localStorage.setItem('salt', keys.salt)
+                      }
+                    );
                 })
+
                 this.setState({ loading: false });
             })
             .catch(error => {
