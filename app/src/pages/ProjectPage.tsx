@@ -15,6 +15,7 @@ import Download from '../components/Download'
 import Upload from '../components/Upload'
 import Header from '../components/Header'
 import { userService } from "../services/UserServices";
+import ProjectHeader from '../components/Project/ProjectHeader'
 
 interface ProjectPageProps {
   firebase: any
@@ -60,6 +61,7 @@ const ProjectPage: React.FC<ProjectPageProps> = (props: ProjectPageProps) => {
     return (
     <IonPage>
       <Header routerLink={"/"} name={currentDisplayName}/>
+      <ProjectHeader />
       <IonContent>
         <div className="container">
             <h1>{name}</h1>
