@@ -29,7 +29,7 @@
         });
 }
 
-function signup(username: string, email: string , token: string, keys:object){
+function signup(username: string, email: string , token: string, keys:object) {
    const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ function signup(username: string, email: string , token: string, keys:object){
     return fetch(process.env.REACT_APP_API_URL + `/users/create`, requestOptions)
         .then(handleResponse)
         .then(data => {
-            return data.en_private_key
+          console.log('sign up successful!')
         })
 }
 
@@ -67,9 +67,6 @@ function getCurrentUser(email: any, firebase: any){
 
    return fetch(process.env.REACT_APP_API_URL + "/users?email=" + email, requestOptions)
    .then(handleResponse)
-   .then(data => {
-       return data
-   })
 }
 function getAllUsersInDatabase() {
      const requestOptions = {

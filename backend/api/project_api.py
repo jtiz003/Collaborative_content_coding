@@ -1,7 +1,15 @@
-from database.project_dao import create_new_project, get_project_by_name, get_projects_names_of_the_user,get_owner_of_the_project
+from database.project_dao import create_new_project, get_project_by_name, get_projects_names_of_the_user, \
+    get_owner_of_the_project
+from database.user_dao import get_user_public_key
 from middleware.auth import check_token
 from flask import Blueprint, request, make_response, g
 import re
+import os
+from base64 import b64encode
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives import hashes
+
 
 project_api = Blueprint('project_api', __name__)
 
@@ -21,7 +29,6 @@ def get_projects():
         })
     response = {'projects': projects}
     return make_response(response), 200
-
 
 
 # @project_api.route('/projects/<project_name>/agreement_score', methods=['GET'])
@@ -76,6 +83,7 @@ body： {
 @project_api.route("/projects/create", methods=['POST'])
 @check_token
 def create_project():
+    global en_entry_key
     print("create project called")
     requestor_email = g.requestor_email
 
@@ -92,8 +100,27 @@ def create_project():
     db_project = get_project_by_name(project_name)
     if db_project is None:
         # TODO check if the project should be encrypted, if yes, generate encrypted entry key 
-        # create a new project
-        create_new_project(requestor_email, request.json)
+        encryption_state = request.json['encryption_state']
+        print('encrypt_status: ', encryption_state)
+
+        if encryption_state:
+            pkstring = get_user_public_key(requestor_email)
+            print(pkstring)
+            public_key=load_pem_public_key(bytes(pkstring, 'utf-8'))
+            isinstance(public_key, rsa.RSAPublicKey)
+            entry_key = os.urandom(32)
+
+
+            en_entry_key = public_key.encrypt(
+                entry_key,
+                padding.OAEP(
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
+                    label=None)
+            )
+            create_new_project(requestor_email, request.json, b64encode(en_entry_key).decode())
+        else:
+            create_new_project(requestor_email, request.json)
     else:
         response = {'message': "Project already exists"}
         return make_response(response), 400

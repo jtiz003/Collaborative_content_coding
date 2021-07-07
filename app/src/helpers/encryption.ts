@@ -2,7 +2,6 @@ import * as crypto from 'crypto'
 
 export const EncryptedHelpers = {
   generateHash,
-  generateEntryKey
 }
 
 function generateHash(phrase:string) {
@@ -11,13 +10,6 @@ function generateHash(phrase:string) {
     , hash = crypto.createHmac("sha256",salt).update(phrase).digest("base64").toString()
     , keys = {salt: salt, hash:hash};
   return keys
-}
-
-
-
-function generateEntryKey() {
-  return  ''
-  // return crypto.generateKeySync('hmac', 64).export.toString('base64');
 }
 
 
