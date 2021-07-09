@@ -7,7 +7,7 @@ import ProjectLabelling from './ProjectLabelling';
 import ProjectSettings from './ProjectSettings';
 
 interface ProjectHeaderProps {
-
+    firebase: any
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = (props: ProjectHeaderProps) => {
@@ -31,18 +31,6 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = (props: ProjectHeaderProps) 
                     <IonLabel>Settings</IonLabel>
                 </IonTabButton>
             </IonTabBar>
-            
-            <Switch>
-                <Route exact path={`/project/${name}/labelling`}>
-                    <ProjectLabelling />
-                </Route>
-                <Route exact path={`/project/${name}/insight`}>
-                    <ProjectInsight />
-                </Route>
-                <Route exact path={`/project/${name}/setting`}>
-                    <ProjectSettings />
-                </Route>
-            </Switch>
         </div>
     );
 };
