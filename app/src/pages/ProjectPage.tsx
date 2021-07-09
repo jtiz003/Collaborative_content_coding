@@ -15,7 +15,7 @@ interface ProjectPageProps {
 }
 
 const ProjectPage: React.FC<ProjectPageProps> = (props: ProjectPageProps) => {
-  const { name } = useParams<{ name: string }>();
+  const { id } = useParams<{ id: string }>();
   const [currentDisplayName,setCurrentDisplayName] = useState("");
 
   const {
@@ -37,13 +37,13 @@ const ProjectPage: React.FC<ProjectPageProps> = (props: ProjectPageProps) => {
       <Header routerLink={"/"} name={currentDisplayName} />
       <ProjectHeader firebase={firebase}/>
       <Switch>
-        <Route exact path={`/project/${name}/labelling`}>
+        <Route exact path={`/project/${id}/labelling`}>
           <ProjectLabelling firebase={firebase} />
         </Route>
-        <Route exact path={`/project/${name}/insight`}>
+        <Route exact path={`/project/${id}/insight`}>
           <ProjectInsight />
         </Route>
-        <Route exact path={`/project/${name}/setting`}>
+        <Route exact path={`/project/${id}/setting`}>
           <ProjectSettings />
         </Route>
       </Switch>
