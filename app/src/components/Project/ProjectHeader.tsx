@@ -1,5 +1,5 @@
 import { IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/react';
-import { ellipse, square, triangle } from 'ionicons/icons';
+import { analytics, ellipse, folderOpen, pricetags, settings, square, triangle } from 'ionicons/icons';
 import React, { useEffect, useState } from 'react';
 import { Route, useRouteMatch, Switch, useParams } from 'react-router';
 import { projectServices } from '../../services/ProjectServices';
@@ -36,18 +36,22 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = (props: ProjectHeaderProps) 
     
     return (
         <div>
-            {project.owner + "/" + project.name}
+            <div>
+                <IonIcon icon={folderOpen} />
+                {project.owner + "/" + project.name}
+            </div>
+
             <IonTabBar>
                 <IonTabButton tab="tab1" href={`/project/${id}/labelling`}>
-                    <IonIcon icon={triangle} />
+                    <IonIcon icon={pricetags} />
                     <IonLabel>Labelling</IonLabel>
                 </IonTabButton>
                 <IonTabButton tab="tab2" href={`/project/${id}/insight`}>
-                    <IonIcon icon={ellipse} />
+                    <IonIcon icon={analytics} />
                     <IonLabel>Insight</IonLabel>
                 </IonTabButton>
                 <IonTabButton tab="tab3" href={`/project/${id}/setting`}>
-                    <IonIcon icon={square} />
+                    <IonIcon icon={settings} />
                     <IonLabel>Settings</IonLabel>
                 </IonTabButton>
             </IonTabBar>
