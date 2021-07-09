@@ -10,7 +10,6 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives import hashes
 
-
 project_api = Blueprint('project_api', __name__)
 
 
@@ -106,10 +105,9 @@ def create_project():
         if encryption_state:
             pkstring = get_user_public_key(requestor_email)
             print(pkstring)
-            public_key=load_pem_public_key(bytes(pkstring, 'utf-8'))
+            public_key = load_pem_public_key(bytes(pkstring, 'utf-8'))
             isinstance(public_key, rsa.RSAPublicKey)
             entry_key = os.urandom(32)
-
 
             en_entry_key = public_key.encrypt(
                 entry_key,

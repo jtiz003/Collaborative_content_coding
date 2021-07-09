@@ -137,32 +137,9 @@ def create_user():
             response = {'message': "Username is already taken"}
             return make_response(response), 400
         else:
-            user_hash = request.json['keys']
-            salt = user_hash['salt']
-            hash_phrase = user_hash['hash']
+            user_keys = request.json['keys']
 
-            # generate encrypted private key and public key
-            private_key = rsa.generate_private_key(
-                public_exponent=65537, key_size=2048, )
-            private_key_pem = private_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.PKCS8,
-                encryption_algorithm=serialization.BestAvailableEncryption(bytes(hash_phrase, 'utf-8'))
-            )
-
-            # private_key_lines = pem.decode('utf-8')
-
-            public_key_pem = private_key.public_key().public_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo).decode('utf-8')
-
-            user_keys = {
-                "salt": salt,
-                "public_key": public_key_pem,
-                "en_private_key": private_key_pem.decode('utf-8')
-            }
             print(user_keys)
-
             user = {
                 "username": username,
                 "email": requestor_email

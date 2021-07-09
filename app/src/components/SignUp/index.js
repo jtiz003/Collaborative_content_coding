@@ -61,16 +61,16 @@ class SignUpFormBase extends Component {
                 this.setState({ loading: false });
 
             }).then(() => {
-                const keys = EncryptedHelpers.generateHash(encryptionKey);
-
-                this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
-                    localStorage.setItem("user-token", idToken);
-                    userService.signup(username, email, idToken, keys).then(
-                      data => localStorage.setItem('salt',keys.salt)
-                    );
-                })
-            console.log(localStorage)
-                this.setState({ loading: false });
+                EncryptedHelpers.generateKeys(encryptionKey).then((keys) => {
+                    this.props.firebase.auth.currentUser.getIdToken().then(idToken => {
+                        localStorage.setItem("user-token", idToken);
+                        userService.signup(username, email, idToken, keys).then(
+                          data => localStorage.setItem('salt',keys.salt)
+                        );
+                    })
+                    this.setState({ loading: false });
+                  }
+                )
             })
             .catch(error => {
                 this.setState({ error });
