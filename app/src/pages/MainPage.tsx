@@ -126,7 +126,7 @@ const MainPage: React.FC<MainPageProps> = (props: MainPageProps) => {
                 <IonCard
                   key={index}
                   className="projectCard"
-                  routerLink={'/project/' + data._id}
+                  routerLink={'/project/' + data._id + '/labelling'}
                 >
                   <IonCardTitle>{data.owner + ' / ' + data.name}</IonCardTitle>
                   {/*<IonCardContent>*/}
