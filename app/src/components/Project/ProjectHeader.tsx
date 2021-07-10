@@ -1,11 +1,9 @@
-import { IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/react';
-import { analytics, ellipse, folderOpen, pricetags, settings, square, triangle } from 'ionicons/icons';
+import { IonTabBar, IonTabButton, IonIcon, IonLabel, IonText } from '@ionic/react';
+import { analytics, folderOpen, pricetags, settings } from 'ionicons/icons';
 import React, { useEffect, useState } from 'react';
-import { Route, useRouteMatch, Switch, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { projectServices } from '../../services/ProjectServices';
-import ProjectInsight from './ProjectInsight';
-import ProjectLabelling from './ProjectLabelling';
-import ProjectSettings from './ProjectSettings';
+import styles from './ProjectHeader.module.css';
 
 interface ProjectHeaderProps {
     firebase: any
@@ -35,24 +33,26 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = (props: ProjectHeaderProps) 
     }, [])
     
     return (
-        <div>
-            <div>
-                <IonIcon icon={folderOpen} />
-                {project.owner + "/" + project.name}
+        <div className={styles.projectDiv}>
+            <div className={styles.headerDiv}>
+                <IonIcon icon={folderOpen} className={styles.folderIcon}/>
+                <IonText className={styles.projectName}>
+                    {project.owner + "/" + project.name}
+                </IonText>
             </div>
 
-            <IonTabBar>
-                <IonTabButton tab="tab1" href={`/project/${id}/labelling`}>
-                    <IonIcon icon={pricetags} />
-                    <IonLabel>Labelling</IonLabel>
+            <IonTabBar className={styles.tabBar}>
+                <IonTabButton tab="tab1" href={`/project/${id}/labelling`} className={styles.tabButton}>
+                    <IonIcon icon={pricetags} className={styles.tabIcon}/>
+                    <IonLabel className={styles.tabLabel}>Labelling</IonLabel>
                 </IonTabButton>
-                <IonTabButton tab="tab2" href={`/project/${id}/insight`}>
-                    <IonIcon icon={analytics} />
-                    <IonLabel>Insight</IonLabel>
+                <IonTabButton tab="tab2" href={`/project/${id}/insight`} className={styles.tabButton}>
+                    <IonIcon icon={analytics} className={styles.tabIcon}/>
+                    <IonLabel className={styles.tabLabel}>Insight</IonLabel>
                 </IonTabButton>
-                <IonTabButton tab="tab3" href={`/project/${id}/setting`}>
-                    <IonIcon icon={settings} />
-                    <IonLabel>Settings</IonLabel>
+                <IonTabButton tab="tab3" href={`/project/${id}/setting`} className={styles.tabButton}>
+                    <IonIcon icon={settings} className={styles.tabIcon}/>
+                    <IonLabel className={styles.tabLabel}>Settings</IonLabel>
                 </IonTabButton>
             </IonTabBar>
         </div>
