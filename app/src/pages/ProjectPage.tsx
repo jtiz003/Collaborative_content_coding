@@ -33,7 +33,7 @@ const ProjectPage: React.FC<ProjectPageProps> = (props: ProjectPageProps) => {
   }, [])
 
   return (
-    <IonPage class='ion-page-project-display'>
+    <IonPage className='ion-page-project-display'>
       <Header routerLink={"/"} name={currentDisplayName} />
       <ProjectHeader firebase={firebase}/>
       <Switch>
