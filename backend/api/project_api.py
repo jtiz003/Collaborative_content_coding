@@ -82,7 +82,6 @@ body： {
 @project_api.route("/projects/create", methods=['POST'])
 @check_token
 def create_project():
-    global en_entry_key
     print("create project called")
     requestor_email = g.requestor_email
 
@@ -104,9 +103,7 @@ def create_project():
 
         if encryption_state:
             pkstring = get_user_public_key(requestor_email)
-            print(pkstring)
             public_key = load_pem_public_key(bytes(pkstring, 'utf-8'))
-            isinstance(public_key, rsa.RSAPublicKey)
             entry_key = os.urandom(32)
 
             en_entry_key = public_key.encrypt(
