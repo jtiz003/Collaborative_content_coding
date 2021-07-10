@@ -1,6 +1,7 @@
 import * as crypto from 'crypto'
 
-const forge = require('node-forge');
+const forge = require('node-forge')
+  ,  pki = forge.pki;
 
 export const EncryptedHelpers = {
   generateKeys,
@@ -12,9 +13,9 @@ async function generateKeys(phrase: string) {
     , hashPhrase = crypto.createHmac("sha256", salt).update(phrase).digest("base64").toString()
     , keys = { salt: salt, public_key: '', en_private_key: '' };
 
-  console.log(window.crypto.subtle)
+  console.log('hashPhrase', hashPhrase)
 
-  const {publicKey, privateKey}= await window.crypto.subtle.generateKey(
+  const {publicKey, privateKey} = await window.crypto.subtle.generateKey(
     {
       name: "RSA-OAEP",
       modulusLength: 2048,
@@ -25,20 +26,20 @@ async function generateKeys(phrase: string) {
     ["encrypt", "decrypt"]
   );
 
-  // export the crypto key to pkcs8 format in pem, and encrypt the private key to pem
-  const pki = forge.pki;
-  const privateKey_exported = await window.crypto.subtle.exportKey('pkcs8', privateKey)
-    , publicKey_exported = await window.crypto.subtle.exportKey("spki", publicKey)
-    , privateKey_pem = exportCryptoKeyToPem(privateKey_exported, false)
-    , privateKey_forge = pki.privateKeyFromPem(privateKey_pem); // convert pem to forge
+  // export the crypto key to pkcs8 format in pem
+  const privateKey_exported = await window.crypto.subtle.exportKey('pkcs8', privateKey);
+  const publicKey_exported = await window.crypto.subtle.exportKey("spki", publicKey);
+  const privateKey_pkcs8 = exportCryptoKeyToPKCS(privateKey_exported, false);
 
-  keys.public_key = exportCryptoKeyToPem(publicKey_exported, true)
+  keys.public_key = exportCryptoKeyToPKCS(publicKey_exported, true)
+
+  // encrypt the private key to pem format
+  const privateKey_forge = pki.privateKeyFromPem(privateKey_pkcs8);
   keys.en_private_key = pki.encryptRsaPrivateKey(privateKey_forge, hashPhrase);
-
   return keys
 }
 
-function exportCryptoKeyToPem(exported:ArrayBuffer, isPublic:boolean) {
+function exportCryptoKeyToPKCS(exported:ArrayBuffer, isPublic:boolean) {
   let exportedAsString = ''
   const bytes = new Uint8Array(exported)
   for (var i = 0; i < bytes.byteLength; i++) {
@@ -52,6 +53,27 @@ function exportCryptoKeyToPem(exported:ArrayBuffer, isPublic:boolean) {
     return `-----BEGIN PRIVATE KEY-----\n${exportedAsBase64}\n-----END PRIVATE KEY-----`;
   }
 }
+
+function decryptEncryptedPrivateKey(en_private_key:string, phrase:string, salt:string) {
+  const hashPhrase = crypto.createHmac("sha256", salt).update(phrase).digest("base64").toString();
+  // decrypt the private key in the pem format
+  const privateKey = pki.decryptRsaPrivateKey(en_private_key, hashPhrase);
+  return privateKey
+}
+
+
+// function decryptEncryptedEntryKey(private_key:string,en_entry_key:string) {
+//   en_entry_key = 'rLnY6WUP0TMent5PV+V4hiRu4dYP3Tn0jU5ysROS+JH1d2ELnu7L5yIMa6Em9aan3jm/S+Dryr98/48iVXDLQ0o0V9gHAGubJp/mfq4S6fYpYf/1UVWMuxQGmLVVAjZRSg9wpVOz4c3FajOe7HU3JjF8DB1qJ1VlRP6FDlTzBtgL6k92b1aDrpb71PXqZWmlhU0O+E2wF9fxMQMrWkix3ZZzc3URbky/a1K/z8IuxlPZ5BcKMFuarbnh5qY9uKA6YaAxI8LCkZ96uE2R6HcnrTDZkWe6T5tzLBMLv1LHkFQkxbGlimfOVcufcMQVzTTNqiSuS5X3Uzq/gEsiTaj02Q=='
+//
+//
+//   return window.crypto.subtle.decrypt(
+//     {
+//       name: "RSA-OAEP"
+//     },
+//     private_key,
+//     ciphertext
+//   );
+// }
 
 
 
