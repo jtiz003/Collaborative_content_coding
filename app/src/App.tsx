@@ -53,7 +53,7 @@ const App: React.FC<AppProps> = (props: AppProps) => {
 
             <IonContent>
                 <div className="pageInit">
-                <IonSpinner class="spinner" name="crescent" color="primary"/>
+                <IonSpinner className="spinner" name="crescent" color="primary"/>
                 </div>
             </IonContent>
             </IonPage>
