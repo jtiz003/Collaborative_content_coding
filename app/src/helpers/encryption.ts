@@ -1,10 +1,15 @@
 import * as crypto from 'crypto'
+import { EncryptionServices } from '../services/EncryptionService'
+import AES from 'crypto-js/aes'
+import Base64 from 'crypto-js/enc-base64'
 
 const forge = require('node-forge')
   ,  pki = forge.pki;
 
 export const EncryptedHelpers = {
   generateKeys,
+  encryptData,
+  decryptData,
 }
 
 async function generateKeys(phrase: string) {
@@ -63,10 +68,12 @@ async function decryptEncryptedEntryKey(privateKey_pem:string, en_entry_key:stri
   const derData = window.atob(en_entry_key)
   const privateKey = await importPrivateKey(privateKey_pem);
 
-  return await window.crypto.subtle.decrypt(
+  const entry_key = await window.crypto.subtle.decrypt(
       { name: 'RSA-OAEP'},
       privateKey,
       str2ab(derData));
+
+  return ab2Str(entry_key)
 }
 
 async function importPrivateKey(privateKey_pem:string) {
@@ -115,50 +122,79 @@ function pem2pkcs8 (pem:string) {
   return pki.privateKeyInfoToPem(privateKeyInfo);
 }
 
-// function decryptEncryptedEntryKey(private_key:string,en_entry_key:string) {
-//   en_entry_key = 'rLnY6WUP0TMent5PV+V4hiRu4dYP3Tn0jU5ysROS+JH1d2ELnu7L5yIMa6Em9aan3jm/S+Dryr98/48iVXDLQ0o0V9gHAGubJp/mfq4S6fYpYf/1UVWMuxQGmLVVAjZRSg9wpVOz4c3FajOe7HU3JjF8DB1qJ1VlRP6FDlTzBtgL6k92b1aDrpb71PXqZWmlhU0O+E2wF9fxMQMrWkix3ZZzc3URbky/a1K/z8IuxlPZ5BcKMFuarbnh5qY9uKA6YaAxI8LCkZ96uE2R6HcnrTDZkWe6T5tzLBMLv1LHkFQkxbGlimfOVcufcMQVzTTNqiSuS5X3Uzq/gEsiTaj02Q=='
-//
-//
-//   return window.crypto.subtle.decrypt(
-//     {
-//       name: "RSA-OAEP"
-//     },
-//     private_key,
-//     ciphertext
-//   );
-// }
+async function encryptData(phrase:string, file:File, firebase:any,email:string) {
+  // get them from local storage
+  // await getKeys(email, firebase)
+console.log(localStorage)
+  console.log('hello')
+  // get these keys from local storage
+  const en_private_key = ''
+  const salt = ''
+  const en_entry_key = ''
+  //const privateKey = decryptEncryptedPrivateKey(en_private_key, phrase,salt)
+  //const entry_key = decryptEncryptedEntryKey(privateKey, en_entry_key)
+
+  // get the text of the file
+  const lines = await getText(file)
+  const encryptedDataArray = []
+  for (var x in lines) {
+    const value = lines[x]
+    const encrypted = AES.encrypt(value, '9qkXCI9ANZGjwnjr8ejcutwQ/LZhAEX4Cjw8moPmc2w=')
+    encryptedDataArray.push(encrypted.ciphertext.toString(Base64))
+
+  }
+
+  return encryptedDataArray
+}
+
+function decryptData(phrase:string, file:File) {
+
+}
+
+function getKeys(email:string, firebase:any) {
+
+  let en_private_key = localStorage.getItem('en_private_key')
+  let public_key = localStorage.getItem('public_key')
+  let salt = localStorage.getItem('salt')
+  let en_entry_key = localStorage.getItem('en_entry_key')
+
+
+  // check if its in the local storage
+  if(en_private_key === null || public_key === null || salt === null) {
+    const userKey = EncryptionServices.getUserKeys(email,firebase).then((data) => {
+      localStorage.setItem('en_private_key','')
+      localStorage.setItem('public_key','')
+      localStorage.setItem('salt','')
+    })
+  }
+
+  if(en_entry_key === null ) {
+    const userKey = EncryptionServices.getUserKeys(email,firebase).then((data) => {
+      localStorage.setItem('en_entry_key','')
+    })
+  }
+
+}
+
+async function getText(file:File) {
+  let text = await file.text();
+  text = text.replace(/['"]+/g, '')
+  const lines = text.split("\r\n")
+  const firstLine = 'ID,DOCUMENT'
+  const dataArray = []
+
+  for (let x in lines) {
+    if (lines[x].includes(firstLine)) { // remove the fist line
+      lines.shift()
+    } else {
+      const value = lines[x].split(',')[1]
+      dataArray.push(value)
+    }
+  }
+  return dataArray
+}
 
 
 
 
-// function encryptData(phrase,publicKey) {
-//   var data = ''
-//     , encryptedData= CryptoJS.AES.encrypt(data, phrase)
-//     , entryKey = encrypted.key
-//     , encryptedEntryKey = encryptEntryKey(entryKey,publicKey);
-//
-//   res['EN_entryKey'] = encryptedEntryKey;
-//   res['data'] = encryptedData;
-// }
 
-// function decryptKey(phrase,encrypted) {
-//   //get the salt, keypair from DB
-//   var hashStr = CryptoJS.SHA256(phrase, salt).toString(CryptoJS.enc.Base64)
-//     , hashStrDB = '';
-//   //compare the hash within the DB
-//   if(hashStr === hashStrDB) { // return the decrypted private key
-//     return CryptoJS.AES.decrypt(encrypted, hashStr);
-//   } else {
-//     // the phrase is wrong
-//   }
-// }
-
-// function decryptData(phrase, key) {
-//   var encrypted = ''
-//   if(phrase != null) {
-//      return decryptKey(phrase)
-//   } else { //find the key in the localstorage
-//     return CryptoJS.AES.decrypt(encrypted, key);
-//   }
-//
-// }
