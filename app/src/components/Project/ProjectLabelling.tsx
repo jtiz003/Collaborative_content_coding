@@ -9,16 +9,18 @@ import Download from '../Download';
 import Upload from '../Upload';
 
 interface ProjectLabellingProps {
-    firebase: any
+    firebase: any,
+    projectId: any
 }
 
 const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabellingProps) => {
-    const { id } = useParams<{ id: string }>();
-
-    const [currentUser, setCurrentUser] = useState<any>({});
+    const [currentUser, setCurrentUser] = useState<any>({
+        '_id': '',
+        'isAdmin': false
+    });
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState(false);
-    const { firebase } = props;
+    const { firebase, projectId } = props;
 
     function isUploading(val: boolean) {
         setUploading(val);
@@ -29,7 +31,7 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
     }
 
     useIonViewWillEnter(() => {
-        userService.getCurrentProjectUser('name')
+        userService.getCurrentProjectUser(projectId)
             .then(data => {
                 setCurrentUser(data)
             })
@@ -40,7 +42,7 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
 
             <div className="fabHolder">
                 <div className="fableft">
-                    <Upload name={'name'} firebase={firebase} isUploading={isUploading} uploadError={isUploadError} enable={(currentUser.isAdmin || currentUser.isContributor) && !uploading} />
+                    <Upload projectId={projectId} firebase={firebase} isUploading={isUploading} uploadError={isUploadError} enable={currentUser.isAdmin && !uploading} />
                 </div>
                 <div className="fabright">
                     <Download name={'name'} enable={!uploading} />
@@ -56,7 +58,7 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
             </div>
 
             {/* TODO: this div causes the whole page to refresh when changing from insight/setting to labelling, need to figure out why - emily */}
-            <div className="document-list">
+            {/* <div className="document-list">
                 {uploading && !uploadError ?
                     <div className="container">
                         <IonToolbar>
@@ -65,7 +67,7 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
                         <br />
                         <IonSpinner class="spinner" name="crescent" color="primary" /></div>
                     : <DocumentList name={'name'} firebase={firebase} currentUser={currentUser} />}
-            </div>
+            </div> */}
         </div>
     );
 }
