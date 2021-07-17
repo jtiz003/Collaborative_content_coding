@@ -1,4 +1,5 @@
 import {downloadHelpers} from '../helpers/download'
+import { EncryptedHelpers} from '../helpers/encryption'
 /**
  * The project service encapsulates all backend api calls for performing CRUD operations on project data
  */
@@ -24,7 +25,8 @@ async function createProject(project_name: any, firebase: any, encryption_state:
         },
         body: JSON.stringify( {project_name, encryption_state} )
     }
-       //await handleAuthorization(firebase);
+
+    //await handleAuthorization(firebase);
    if(firebase.auth.currentUser != null){
     firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
         if(token !== idToken){
@@ -78,18 +80,8 @@ async function getProjectAgreementScore(projectName: any, firebase: any) {
         "Access-Control-Allow-Methods": "DELETE, POST, GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With" },
     };
-    //await handleAuthorization(firebase);
-    const token = localStorage.getItem('user-token');
-    if(firebase.auth.currentUser != null){
-     firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
-         if(token !== idToken){
-             localStorage.setItem('user-token',idToken)
-         }
-        })
-    } else {
-     window.location.href = '/auth';
-    }
- 
+    await handleAuthorization(firebase);
+
     return fetch(process.env.REACT_APP_API_URL + '/projects/' + projectName
         + '/agreement_score?id_token=' + localStorage.getItem('user-token'), requestOptions) // TODO:config.apiUrl
         .then(handleResponse)
@@ -129,16 +121,7 @@ async function getProjectUsers(project: string, firebase: any) {
         "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With" }, 
     };
 
-    const token = localStorage.getItem('user-token');
-   if(firebase.auth.currentUser != null){
-    firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
-        if(token !== idToken){
-            localStorage.setItem('user-token',idToken)
-        }
-       })
-   }else{
-    window.location.href = '/auth';
-   }
+   await handleAuthorization(firebase)
 
     return fetch(process.env.REACT_APP_API_URL + 
         '/projects/' + project + '/users' + '?id_token=' + localStorage.getItem('user-token') + '&page=0&page_size=20',
@@ -156,16 +139,7 @@ async function getProjectUsers(project: string, firebase: any) {
         body: JSON.stringify({ user })
         };
     
-        const token = localStorage.getItem('user-token');
-        if(firebase.auth.currentUser != null){
-         firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
-             if(token !== idToken){
-                 localStorage.setItem('user-token',idToken)
-             }
-            })
-        }else{
-         window.location.href = '/auth';
-        }
+    await handleAuthorization(firebase)
 
     return fetch(process.env.REACT_APP_API_URL +
         '/projects/' + project + '/users/add' + '?id_token=' + localStorage.getItem('user-token'), requestOptions)
@@ -182,16 +156,7 @@ async function getProjectUsers(project: string, firebase: any) {
          body: JSON.stringify({ label_name })
      };
 
-     const token = localStorage.getItem('user-token');
-     if (firebase.auth.currentUser != null) {
-         firebase.auth.currentUser.getIdToken().then((idToken: string) => {
-             if (token !== idToken) {
-                 localStorage.setItem('user-token', idToken)
-             }
-         })
-     } else {
-         window.location.href = '/auth';
-     }
+    await  handleAuthorization(firebase)
 
     return fetch(process.env.REACT_APP_API_URL +
         '/projects/' + project + '/labels/add' + '?id_token=' + localStorage.getItem('user-token'), requestOptions)
@@ -228,11 +193,19 @@ async function getProjectUsers(project: string, firebase: any) {
         .then(handleResponse)
  }
 
- async function uploadDocuments(project : string, file : File, firebase: any){
+ async function uploadDocuments(project : string, file : File, firebase: any, encryptStatus:boolean){
     const formData = new FormData();
+    console.log(file)
 
-    formData.append("inputFile", file);
-    formData.append("projectName", project);
+   if(encryptStatus) {
+     EncryptedHelpers.encryptData('ywu660', file, firebase, 'ywu660@aucklanduni.ac.nz').then(
+       (r)  => {
+       }
+     )
+   }
+
+   formData.append("inputFile", file);
+   formData.append("projectName", project);
 
     const requestOptions = {
         method : "POST",
@@ -255,7 +228,6 @@ function handleResponse(response: { text: () => Promise<any>; ok: any; status: n
            const error = (data && data.message) || response.statusText;
            return Promise.reject(error);
        }
-
        return data;
    });
 }
@@ -263,12 +235,13 @@ function handleResponse(response: { text: () => Promise<any>; ok: any; status: n
 export async function handleAuthorization(firebaseAuth: any) {
     const token = localStorage.getItem('user-token');
     if(firebaseAuth.auth.currentUser != null){
-        firebaseAuth.auth.currentUser.getIdToken().then((idToken: string) =>{
-         if(token !== idToken){
-             localStorage.setItem('user-token',idToken)
-         }
+        firebaseAuth.auth.currentUser.getIdToken()
+          .then((idToken: string) => {
+            if(token !== idToken) {
+              localStorage.setItem('user-token',idToken)
+            }
         })
-    }else{
+    } else {
      window.location.href = '/auth';
     }
 }

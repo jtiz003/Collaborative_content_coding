@@ -1,10 +1,12 @@
+import re
+import os
+from bson import ObjectId
 from database.project_dao import create_new_project, get_project_by_name, get_projects_names_of_the_user, \
     get_owner_of_the_project
 from database.user_dao import get_user_public_key
 from middleware.auth import check_token
+from database.model import Project
 from flask import Blueprint, request, make_response, g
-import re
-import os
 from base64 import b64encode
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -99,12 +101,12 @@ def create_project():
     if db_project is None:
         # TODO check if the project should be encrypted, if yes, generate encrypted entry key 
         encryption_state = request.json['encryption_state']
-        print('encrypt_status: ', encryption_state)
 
         if encryption_state:
             pkstring = get_user_public_key(requestor_email)
             public_key = load_pem_public_key(bytes(pkstring, 'utf-8'))
             entry_key = os.urandom(32)
+            print(b64encode(entry_key).decode())
 
             en_entry_key = public_key.encrypt(
                 entry_key,
@@ -113,6 +115,7 @@ def create_project():
                     algorithm=hashes.SHA256(),
                     label=None)
             )
+            print(b64encode(en_entry_key).decode())
             create_new_project(requestor_email, request.json, b64encode(en_entry_key).decode())
         else:
             create_new_project(requestor_email, request.json)
@@ -121,6 +124,20 @@ def create_project():
         return make_response(response), 400
 
     return "", 204
+
+
+@project_api.route("/projects/<project_id>/en_entry_key", methods=['GET'])
+@check_token
+def get_en_entry_key(project_id):
+    project = Project.find(ObjectId(project_id))
+    owner = get_owner_of_the_project(project)
+
+    if owner.entry_key:
+        return owner.entry_key
+    else:
+        response = {'message': "The owner of the project did not have entry_key"}
+        return make_response(response), 400
+
 
 # @project_api.route("/projects/<project_name>/delete", methods=['DELETE'])
 # def delete_project(project_name):
