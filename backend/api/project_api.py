@@ -19,7 +19,7 @@ project_api = Blueprint('project_api', __name__)
 @check_token
 def get_projects():
     requestor_email = g.requestor_email
-    projects_of_the_user = get_projects_names_of_the_user(requestor_email)
+    projects_of_the_user = get_all_projects_of_a_user(requestor_email)
     projects = []
 
     for p in projects_of_the_user:
@@ -28,7 +28,35 @@ def get_projects():
             'name': p.project_name,
             'owner': get_owner_of_the_project(p).username
         })
+
+    # sort projects by owner
+    projects = sorted(projects, key=lambda k: k['owner']) 
     response = {'projects': projects}
+    return make_response(response), 200
+
+
+
+@project_api.route("/projects/<project_id>", methods=['GET'])
+@check_token
+def get_project_description(project_id):
+    requestor_email = g.requestor_email
+
+    if not does_user_belong_to_a_project(requestor_email, project_id):
+        return user_unauthorised_response()
+
+    project = get_project_by_id(project_id)
+    owner = get_owner_of_the_project(project)
+
+    project = {
+        '_id': str(project.id),
+        'owner': owner.username,
+        'name': project.project_name,
+        'state': project.state,
+        'encryption_state': project.encryption_state
+    }
+
+    # sort projects by owner
+    response = {'project': project}
     return make_response(response), 200
 
 
@@ -97,8 +125,9 @@ def create_project():
         response = {'message': "Project name can only be Alphanumerics and underscores"}
         return make_response(response), 400
 
-    db_project = get_project_by_name(project_name)
-    if db_project is None:
+    db_project = get_user_from_database_by_email(requestor_email).projects
+    # check this user did not create a project with the same name before 
+    if not any((project.project_name == project_name and get_owner_of_the_project(project).email == requestor_email ) for project in db_project):
         # TODO check if the project should be encrypted, if yes, generate encrypted entry key 
         encryption_state = request.json['encryption_state']
 
@@ -106,7 +135,6 @@ def create_project():
             pkstring = get_user_public_key(requestor_email)
             public_key = load_pem_public_key(bytes(pkstring, 'utf-8'))
             entry_key = os.urandom(32)
-            print(b64encode(entry_key).decode())
 
             en_entry_key = public_key.encrypt(
                 entry_key,
@@ -115,7 +143,6 @@ def create_project():
                     algorithm=hashes.SHA256(),
                     label=None)
             )
-            print(b64encode(en_entry_key).decode())
             create_new_project(requestor_email, request.json, b64encode(en_entry_key).decode())
         else:
             create_new_project(requestor_email, request.json)

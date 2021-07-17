@@ -22,7 +22,7 @@ def init_db(app):
 
 class DataLabelResult(db.EmbeddedDocument):
     user = db.ReferenceField('User')
-    label = db.ReferenceField("Label")
+    label = db.StringField() 
 
 
 class UserKey(db.EmbeddedDocument):
@@ -35,6 +35,7 @@ class Collaborator(db.EmbeddedDocument):
     entry_key = db.StringField()
     user = db.ReferenceField('User')
     role = db.EnumField(UserRole)
+    dataNumber = db.ListField()
 
 
 # one line of data that needs to be labelled

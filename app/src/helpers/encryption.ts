@@ -113,7 +113,9 @@ function ab2Str(ab:ArrayBuffer) {
   for (var i = 0; i < bytes.byteLength; i++) {
     exportedAsString += String.fromCharCode(bytes[i]);
   }
+
   return window.btoa(exportedAsString);
+
 }
 
 function pem2pkcs8 (pem:string) {
@@ -122,6 +124,7 @@ function pem2pkcs8 (pem:string) {
   const privateKeyInfo = pki.wrapRsaPrivateKey(rsaPrivateKey);
   return pki.privateKeyInfoToPem(privateKeyInfo);
 }
+
 
 async function encryptData(phrase:string, file:File, firebase:any,email:string) {
   // get keys from local storage
@@ -191,8 +194,3 @@ async function getDocument(file:File) {
   }
   return dataArray
 }
-
-
-
-
-

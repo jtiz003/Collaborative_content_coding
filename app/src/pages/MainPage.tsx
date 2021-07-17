@@ -23,13 +23,13 @@ const MainPage: React.FC<MainPageProps> = (props: MainPageProps) => {
   const [projectLoading, setProjectLoading] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDisplayName, setCurrentDisplayName] = useState('');
-
+  const [newProjectName, setNewProjectName] = useState('');
 
   const {
     firebase
   } = props;
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
     setLoading(true)
     try {
       projectServices.getProjectNames(firebase)
@@ -43,7 +43,7 @@ const MainPage: React.FC<MainPageProps> = (props: MainPageProps) => {
           setProjectNames(data)
         })
     } catch (e) {}
-  },[]);
+  },[newProjectName]);
 
   useEffect(() => {
     let temp = [...projectLoading]
@@ -91,12 +91,13 @@ const MainPage: React.FC<MainPageProps> = (props: MainPageProps) => {
       userService.getCurrentUser(localStorage.getItem("email"), firebase)
         .then(data => {
           setCurrentDisplayName(data.username)
+          localStorage.setItem('en_private_key', data.key.en_private_key)
         })
     } catch (e) {}
   }, [])
 
   function handleCreateProject(name:any) {
-    setProjectNames((projectNames)=>[...projectNames,{'name':name,'owner':currentDisplayName}])
+    setNewProjectName(name);
   }
 
   function handleLoading(load:boolean) {
@@ -125,7 +126,7 @@ const MainPage: React.FC<MainPageProps> = (props: MainPageProps) => {
                 <IonCard
                   key={index}
                   className="projectCard"
-                  routerLink={'/project/' + data.name}
+                  routerLink={'/project/' + data._id + '/labelling'}
                 >
                   <IonCardTitle>{data.owner + ' / ' + data.name}</IonCardTitle>
                   {/*<IonCardContent>*/}
