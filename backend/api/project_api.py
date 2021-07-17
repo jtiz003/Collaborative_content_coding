@@ -1,12 +1,13 @@
-import re
-import os
 from bson import ObjectId
-from database.project_dao import create_new_project, get_project_by_name, get_projects_names_of_the_user, \
-    get_owner_of_the_project
-from database.user_dao import get_user_public_key
+from api.validation_methods import user_unauthorised_response
+from database.user_dao import does_user_belong_to_a_project, get_user_public_key, get_user_from_database_by_email
+from database.project_dao import create_new_project, get_all_projects_of_a_user, get_owner_of_the_project, \
+    get_project_by_id
 from middleware.auth import check_token
 from database.model import Project
 from flask import Blueprint, request, make_response, g
+import re
+import os
 from base64 import b64encode
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -30,10 +31,9 @@ def get_projects():
         })
 
     # sort projects by owner
-    projects = sorted(projects, key=lambda k: k['owner']) 
+    projects = sorted(projects, key=lambda k: k['owner'])
     response = {'projects': projects}
     return make_response(response), 200
-
 
 
 @project_api.route("/projects/<project_id>", methods=['GET'])
@@ -127,7 +127,8 @@ def create_project():
 
     db_project = get_user_from_database_by_email(requestor_email).projects
     # check this user did not create a project with the same name before 
-    if not any((project.project_name == project_name and get_owner_of_the_project(project).email == requestor_email ) for project in db_project):
+    if not any((project.project_name == project_name and get_owner_of_the_project(project).email == requestor_email) for
+               project in db_project):
         # TODO check if the project should be encrypted, if yes, generate encrypted entry key 
         encryption_state = request.json['encryption_state']
 
@@ -164,7 +165,6 @@ def get_en_entry_key(project_id):
     else:
         response = {'message': "The owner of the project did not have entry_key"}
         return make_response(response), 400
-
 
 # @project_api.route("/projects/<project_name>/delete", methods=['DELETE'])
 # def delete_project(project_name):
