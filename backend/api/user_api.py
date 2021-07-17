@@ -49,7 +49,7 @@ def get_all_users_emails():
 
 @user_api.route("/projects/<project_id>/user", methods=["Get"])
 @check_token
-def get_current_user_for_proj(project_id):
+def get_current_user_for_project(project_id):
     collaborators = get_all_users_associated_with_a_project(project_id)
     users = []
     for collaborator in collaborators:
