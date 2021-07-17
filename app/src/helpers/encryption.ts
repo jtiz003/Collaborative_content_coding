@@ -58,13 +58,13 @@ function exportCryptoKeyToPKCS(exported:ArrayBuffer, isPublic:boolean) {
   }
 }
 
-function decryptEncryptedPrivateKey(en_private_key:string, phrase:string, salt:string) {
+function decryptEncryptedPrivateKey(en_private_key:any, phrase:string, salt:any) {
   const hashPhrase = crypto.createHmac("sha256", salt).update(phrase).digest("base64").toString();
   // decrypt the private key in the pem format
   return pki.privateKeyToPem(pki.decryptRsaPrivateKey(en_private_key, hashPhrase))
 }
 
-async function decryptEncryptedEntryKey(privateKey_pem:string, en_entry_key:string) {
+async function decryptEncryptedEntryKey(privateKey_pem:string, en_entry_key:any) {
   const derData = window.atob(en_entry_key)
   const privateKey = await importPrivateKey(privateKey_pem);
 
@@ -83,6 +83,7 @@ async function importPrivateKey(privateKey_pem:string) {
   const pemFooter = "-----END PRIVATE KEY-----";
   let pemContents = privateKey_pkcs8.replace(pemHeader,'');
   pemContents = pemContents.replace(pemFooter,'');
+
   // base64 decode the string to get the binary data
   const binaryDerString = window.atob(pemContents);
   // convert from a binary string to an ArrayBuffer
@@ -112,7 +113,7 @@ function ab2Str(ab:ArrayBuffer) {
   for (var i = 0; i < bytes.byteLength; i++) {
     exportedAsString += String.fromCharCode(bytes[i]);
   }
-  return exportedAsString
+  return window.btoa(exportedAsString);
 }
 
 function pem2pkcs8 (pem:string) {
@@ -123,27 +124,26 @@ function pem2pkcs8 (pem:string) {
 }
 
 async function encryptData(phrase:string, file:File, firebase:any,email:string) {
-  // get them from local storage
-  // await getKeys(email, firebase)
-console.log(localStorage)
-  console.log('hello')
+  // get keys from local storage
+  await getKeys(email, firebase)
+  console.log(localStorage)
+
   // get these keys from local storage
-  const en_private_key = ''
-  const salt = ''
-  const en_entry_key = ''
-  //const privateKey = decryptEncryptedPrivateKey(en_private_key, phrase,salt)
-  //const entry_key = decryptEncryptedEntryKey(privateKey, en_entry_key)
+  const en_private_key = localStorage.getItem('en_private_key')
+  const salt = localStorage.getItem('salt')
+  const en_entry_key = localStorage.getItem('en_entry_key')
+  const privateKey_pem = decryptEncryptedPrivateKey(en_private_key, phrase, salt)
+  const entry_key = await decryptEncryptedEntryKey(privateKey_pem, en_entry_key)
 
   // get the text of the file
-  const lines = await getText(file)
+  const lines = await getDocument(file)
   const encryptedDataArray = []
   for (var x in lines) {
     const value = lines[x]
-    const encrypted = AES.encrypt(value, '9qkXCI9ANZGjwnjr8ejcutwQ/LZhAEX4Cjw8moPmc2w=')
+    const encrypted = AES.encrypt(value, entry_key)
     encryptedDataArray.push(encrypted.ciphertext.toString(Base64))
 
   }
-
   return encryptedDataArray
 }
 
@@ -151,8 +151,7 @@ function decryptData(phrase:string, file:File) {
 
 }
 
-function getKeys(email:string, firebase:any) {
-
+async function getKeys(email:string, firebase:any) {
   let en_private_key = localStorage.getItem('en_private_key')
   let public_key = localStorage.getItem('public_key')
   let salt = localStorage.getItem('salt')
@@ -161,22 +160,21 @@ function getKeys(email:string, firebase:any) {
 
   // check if its in the local storage
   if(en_private_key === null || public_key === null || salt === null) {
-    const userKey = EncryptionServices.getUserKeys(email,firebase).then((data) => {
-      localStorage.setItem('en_private_key','')
-      localStorage.setItem('public_key','')
-      localStorage.setItem('salt','')
+    EncryptionServices.getUserKeys(email, firebase).then((key) => {
+      localStorage.setItem('en_private_key',key.en_private_key)
+      localStorage.setItem('salt',key.salt)
     })
   }
 
-  if(en_entry_key === null ) {
-    const userKey = EncryptionServices.getUserKeys(email,firebase).then((data) => {
-      localStorage.setItem('en_entry_key','')
-    })
-  }
-
+  // set in an array
+  // if(en_entry_key === null ) {
+  //    EncryptionServices.getEncryptedEntryKey(email,firebase).then((data) => {
+  //     localStorage.setItem('en_entry_key','')
+  //   })
+  // }
 }
 
-async function getText(file:File) {
+async function getDocument(file:File) {
   let text = await file.text();
   text = text.replace(/['"]+/g, '')
   const lines = text.split("\r\n")
