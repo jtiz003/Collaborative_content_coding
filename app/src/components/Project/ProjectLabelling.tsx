@@ -20,14 +20,18 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
     });
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState(false);
+    const [uploadErrorMsg, setUploadErrorMsg] = useState("");
     const { firebase, projectId } = props;
 
     function isUploading(val: boolean) {
         setUploading(val);
     }
 
-    function isUploadError(val: boolean) {
+    function isUploadError(val: boolean, message: string) {        
         setUploadError(val);
+        if(val) {
+            setUploadErrorMsg(message);
+        }
     }
 
     useIonViewWillEnter(() => {
@@ -52,7 +56,7 @@ const ProjectLabelling: React.FC<ProjectLabellingProps> = (props: ProjectLabelli
                 {uploadError ?
                     <div className="container">
                         <IonToolbar>
-                            <IonTitle color="danger">Error: uploaded file is invalid.</IonTitle>
+                            <IonTitle color="danger">{uploadErrorMsg}</IonTitle>
                         </IonToolbar></div>
                     : <div></div>}
             </div>

@@ -268,7 +268,7 @@ async function getDescriptionOfAProject(firebase: any, project_id: any) {
      return fetch(process.env.REACT_APP_API_URL + '/projects/upload', requestOptions)
          .then(handleResponse)
          .then(data => {
-             return data.message
+             return data
          }
     )
  }

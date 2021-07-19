@@ -161,17 +161,19 @@ def upload_file():
             if len(documents_to_import) > 0:
                 print("about to insert data to the database")
                 add_documents_to_database(project, documents_to_import)
+                return make_response(response), 200 
 
-            if len(conflicting_display_id_docs) > 0 and len(ids_incorrectly_formatted) > 0:
-                response = {'Documents with IDs already in system': list(conflicting_display_id_docs),
-                            'Documents with incorrectly formatted IDs': list(ids_incorrectly_formatted)}
-            elif len(conflicting_display_id_docs) > 0:
-                response = {'Documents with IDs already in system': list(conflicting_display_id_docs)}
-            elif len(ids_incorrectly_formatted) > 0:
-                response = {'Documents with incorrectly formatted IDs': list(ids_incorrectly_formatted)}
+            else:
+                if len(conflicting_display_id_docs) > 0 and len(ids_incorrectly_formatted) > 0:
+                    response = { 'message': 'Documents with IDs already in system: ' + str(conflicting_display_id_docs) +
+                                 ' Documents with incorrectly formatted IDs ' +  str(ids_incorrectly_formatted)}
+                elif len(conflicting_display_id_docs) > 0:
+                    response = {'message': 'Documents with IDs already in system: ' + str(conflicting_display_id_docs)}
+                elif len(ids_incorrectly_formatted) > 0:
+                    response = {'message': 'Documents with incorrectly formatted IDs: ' + str(ids_incorrectly_formatted)}
 
-            # error response
-            return make_response(response), 200 
+                # error response
+                return make_response(response), 442
 
 
 # # Endpoint for exporting documents with labels for project
