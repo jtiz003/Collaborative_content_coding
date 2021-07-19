@@ -34,6 +34,20 @@ def get_user_info_from_email():
     return user_to_add, 200
 
 
+@user_api.route("/user/user_key", methods=['GET'])
+@check_token
+def get_current_user_key():
+    requestor_email = g.requestor_email
+    print(requestor_email)
+    user = get_user_from_database_by_email(requestor_email)
+    if user.key:
+        print(user.key)
+        return jsonify(user.key), 200
+    else:
+        response = {'message': "The user didn't have the user key"}
+        return make_response(response), 400
+
+
 '''
 get emails of all users
 FIXME why is this even needed?????

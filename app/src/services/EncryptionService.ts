@@ -1,4 +1,3 @@
-import { userService } from './UserServices';
 import { handleAuthorization } from './ProjectServices';
 
 export const EncryptionServices = {
@@ -7,9 +6,24 @@ export const EncryptionServices = {
 }
 
 async function getUserKeys(firebase: any) {
-  const user = await userService.getCurrentUser(localStorage.getItem("email"), firebase)
-  console.log(user)
-  return user.key
+  await handleAuthorization(firebase)
+  const token = localStorage.getItem('user-token')
+
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "DELETE, POST, GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+      "Authorization": "Bearer " + token
+    },
+  };
+
+  return fetch(process.env.REACT_APP_API_URL + '/user/user_key', requestOptions) // TODO:config.apiUrl
+    .then(handleResponse)
+    .then(data => {
+      return data
+    })
 }
 
 async function getEncryptedEntryKey(project_id: any, firebase: any) {
@@ -31,7 +45,6 @@ async function getEncryptedEntryKey(project_id: any, firebase: any) {
     + '/en_entry_key', requestOptions) // TODO:config.apiUrl
     .then(handleResponse)
     .then(data => {
-      console.log(data)
       return data.en_entry_key
     })
 }
