@@ -1,4 +1,4 @@
-import {downloadHelpers} from '../helpers/download'
+import { downloadHelpers } from '../helpers/download'
 import { EncryptedHelpers} from '../helpers/encryption'
 /**
  * The project service encapsulates all backend api calls for performing CRUD operations on project data
@@ -17,7 +17,9 @@ export const projectServices = {
 }
 
 async function createProject(project_name: any, firebase: any, encryption_state:boolean){
+  await handleAuthorization(firebase);
   const token = localStorage.getItem('user-token');
+
   const requestOptions = {
         method: 'POST',
         headers: {
@@ -27,16 +29,6 @@ async function createProject(project_name: any, firebase: any, encryption_state:
         body: JSON.stringify( {project_name, encryption_state} )
     }
 
-    //await handleAuthorization(firebase);
-   if(firebase.auth.currentUser != null){
-    firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
-        if(token !== idToken){
-            localStorage.setItem('user-token',idToken)
-        }})
-   } else{
-    window.location.href = '/auth';
-   }
-
     return fetch(process.env.REACT_APP_API_URL + '/projects/create', requestOptions) // TODO:config.apiUrl
     .then(handleResponse)
     .then(data => {
@@ -45,6 +37,7 @@ async function createProject(project_name: any, firebase: any, encryption_state:
 }
 
 async function getProjectNames(firebase: any) {
+  await handleAuthorization(firebase);
   const token = localStorage.getItem('user-token');
   const requestOptions = {
        method: 'GET',
@@ -54,17 +47,6 @@ async function getProjectNames(firebase: any) {
        "Access-Control-Allow-Headers": "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
        "Authorization":"Bearer " + token
        }};
-
-   //await handleAuthorization(firebase);
-   if(firebase.auth.currentUser != null){
-    firebase.auth.currentUser.getIdToken().then((idToken: string) =>{
-        if(token !== idToken){
-            localStorage.setItem('user-token',idToken)
-        }
-       })
-   } else {
-     window.location.href = '/auth';
-   }
 
    return fetch(process.env.REACT_APP_API_URL + '/projects/all', requestOptions) // TODO:config.apiUrl
        .then(handleResponse)
@@ -220,8 +202,9 @@ async function getDescriptionOfAProject(firebase: any, project_id: any) {
     console.log(file)
    
    if(encryptStatus) {
-     EncryptedHelpers.encryptData('ywu660', file, firebase, 'ywu660@aucklanduni.ac.nz').then(
+     EncryptedHelpers.encryptData('ywu660', file, firebase, projectId).then(
        (r)  => {
+         console.log(r)
        }
      )
    }
