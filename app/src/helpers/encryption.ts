@@ -126,17 +126,20 @@ function pem2pkcs8 (pem:string) {
 }
 
 
-async function encryptData(phrase:string, file:File, firebase:any,email:string) {
+async function encryptData(phrase:string, file:File, firebase:any,projectId:string) {
   // get keys from local storage
-  await getKeys(email, firebase)
+  await getKeys(firebase)
   console.log(localStorage)
 
   // get these keys from local storage
   const en_private_key = localStorage.getItem('en_private_key')
   const salt = localStorage.getItem('salt')
-  const en_entry_key = localStorage.getItem('en_entry_key')
+  const en_entry_key = await EncryptionServices.getEncryptedEntryKey(projectId, firebase)
+  console.log(en_entry_key)
   const privateKey_pem = decryptEncryptedPrivateKey(en_private_key, phrase, salt)
   const entry_key = await decryptEncryptedEntryKey(privateKey_pem, en_entry_key)
+
+  console.log('entry_key',entry_key)
 
   // get the text of the file
   const lines = await getDocument(file)
@@ -145,8 +148,8 @@ async function encryptData(phrase:string, file:File, firebase:any,email:string) 
     const value = lines[x]
     const encrypted = AES.encrypt(value, entry_key)
     encryptedDataArray.push(encrypted.ciphertext.toString(Base64))
-
   }
+  console.log(encryptedDataArray)
   return encryptedDataArray
 }
 
@@ -154,27 +157,17 @@ function decryptData(phrase:string, file:File) {
 
 }
 
-async function getKeys(email:string, firebase:any) {
+async function getKeys(firebase:any) {
   let en_private_key = localStorage.getItem('en_private_key')
-  let public_key = localStorage.getItem('public_key')
   let salt = localStorage.getItem('salt')
-  let en_entry_key = localStorage.getItem('en_entry_key')
-
 
   // check if its in the local storage
-  if(en_private_key === null || public_key === null || salt === null) {
-    EncryptionServices.getUserKeys(email, firebase).then((key) => {
+  if(en_private_key === null || salt === null) {
+    EncryptionServices.getUserKeys(firebase).then((key) => {
       localStorage.setItem('en_private_key',key.en_private_key)
       localStorage.setItem('salt',key.salt)
     })
   }
-
-  // set in an array
-  // if(en_entry_key === null ) {
-  //    EncryptionServices.getEncryptedEntryKey(email,firebase).then((data) => {
-  //     localStorage.setItem('en_entry_key','')
-  //   })
-  // }
 }
 
 async function getDocument(file:File) {

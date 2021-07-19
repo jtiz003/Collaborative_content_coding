@@ -5,7 +5,7 @@ from database.project_dao import create_new_project, get_all_projects_of_a_user,
     get_project_by_id
 from middleware.auth import check_token
 from database.model import Project
-from flask import Blueprint, request, make_response, g
+from flask import Blueprint, request, make_response, g, jsonify
 import re
 import os
 from base64 import b64encode
@@ -144,6 +144,8 @@ def create_project():
                     algorithm=hashes.SHA256(),
                     label=None)
             )
+            print(b64encode(entry_key).decode())
+            print(b64encode(en_entry_key).decode())
             create_new_project(requestor_email, request.json, b64encode(en_entry_key).decode())
         else:
             create_new_project(requestor_email, request.json)
@@ -157,11 +159,13 @@ def create_project():
 @project_api.route("/projects/<project_id>/en_entry_key", methods=['GET'])
 @check_token
 def get_en_entry_key(project_id):
-    project = Project.find(ObjectId(project_id))
-    owner = get_owner_of_the_project(project)
-
+    project = Project.objects(id=project_id).get_or_404()
+    owner = list(filter(lambda collaborator: collaborator.role.value == 'owner', project.collaborators))[0]
+    print(owner.entry_key)
+    print(owner.entry_key)
     if owner.entry_key:
-        return owner.entry_key
+        en_entry_key = {'en_entry_key': owner.entry_key}
+        return en_entry_key, 200
     else:
         response = {'message': "The owner of the project did not have entry_key"}
         return make_response(response), 400
