@@ -7,8 +7,6 @@ from flask import Blueprint, request, make_response, jsonify, g
 # from mongoDBInterface import get_col
 from database.user_dao import get_user_from_database_by_email, get_user_from_database_by_username, save_user_and_keys, \
     get_all_user_email_from_database, does_user_belong_to_a_project
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
 
 user_api = Blueprint('user_api', __name__)
 

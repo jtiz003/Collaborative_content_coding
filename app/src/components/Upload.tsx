@@ -48,8 +48,7 @@ const Upload: React.FC<UploadProps> = (props:UploadProps) => {
         // @ts-ignore
         projectServices.uploadDocuments(projectId, inputFile.current.files[0], firebase, encryptStatus).then(data => {
           isUploading(false);
-        })
-          .catch(e => {
+        }).catch(e => {
             uploadError(true, e);
             isUploading(false);
           })
