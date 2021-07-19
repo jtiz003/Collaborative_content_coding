@@ -57,7 +57,7 @@ def get_current_user_for_proj(project_id):
     user = {
         '_id': str(collaborator.user.id),
         # a user had admin rights if he is the owner or a admin
-        'isAdmin': True if (collaborator.role == UserRole.OWNER or collaborator.role == UserRole.ADMIN) else False,
+        'isAdmin': True if collaborator.role == UserRole.OWNER else False,
         'isContributor': True if collaborator.role == UserRole.COLLABORATOR else False
     }
 
